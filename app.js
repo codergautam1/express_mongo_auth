@@ -7,13 +7,14 @@ const createError = require('http-errors');
 
 const authRoute = require('./routes/auth.route');
 const morgan = require("morgan");
+const {verifyToken} = require("./helpers/jwtHelper");
 app.use(express.json())
 app.use(morgan('dev'));
 
 app.use('/auth', authRoute);
 
-app.get('/', (req, res) => {
-    res.send("Hello World!");
+app.get('/',verifyToken, (req, res) => {
+    res.send(req.payload);
 })
 
 app.use(async (req, res, next) => {
