@@ -4,7 +4,7 @@ const UserModel = require('../models/User.model');
 const createError = require('http-errors');
 const {userAuthSchema} = require('../helpers/SchemaValidation')
 const {singedAccessToken, refreshAccessToken, refreshToken, verifyToken, verifyRefreshToken} = require("../helpers/jwtHelper");
-
+const redisClient = require('../helpers/initRedis')
 router.post("/login", async (req, res, next) => {
     try {
         const userResult = await userAuthSchema.validateAsync(req.body)
@@ -53,8 +53,24 @@ router.post('/refreshToken', async (req, res, next) => {
     }
 })
 
-router.post("/logout", async (req, res) => {
-    res.send("Logout route");
+router.post("/logout", async (req, res,next) => {
+    try {
+        const { refreshToken } = req.body;
+        console.log(refreshToken)
+        if (!refreshToken) {
+            return res.status(400).send("Refresh token is required");
+        }
+        const userId = await verifyRefreshToken(refreshToken);
+        if (!userId) {
+            return res.status(401).send("Invalid refresh token");
+        }
+        const result = await redisClient.del(userId)
+
+        res.status(204);
+    } catch (e) {
+        console.error("Error during logout:", e);
+        next(e);
+    }
 })
 
 module.exports = router;

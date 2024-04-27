@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 require('./helpers/initdb');
+require('./helpers/initRedis')
 
 const createError = require('http-errors');
 
