@@ -9,7 +9,7 @@ module.exports = {
                 userId: userId,
             }
             const options = {expiresIn: '1d'};
-            jwt.sign(payload, JWT_SECRET,options, (err, token) => {
+            jwt.sign(payload, JWT_SECRET, options, (err, token) => {
                 if (err) {
                     console.log(err)
                     return reject(createError.InternalServerError())
@@ -24,7 +24,7 @@ module.exports = {
                 userId: userId,
             }
             const options = {expiresIn: '1y'};
-            jwt.sign(payload, REFRESH_ACCESS_TOKEN,options, (err, token) => {
+            jwt.sign(payload, REFRESH_ACCESS_TOKEN, options, (err, token) => {
                 if (err) {
                     console.log(err)
                     return reject(createError.InternalServerError())
@@ -33,7 +33,7 @@ module.exports = {
             })
         })
     },
-    verifyToken: (req,res,next) => {
+    verifyToken: (req, res, next) => {
         try {
             if (!req.headers['authorization']) createError.Unauthorized()
             const bearerToken = req.headers['authorization'];
@@ -46,10 +46,21 @@ module.exports = {
                 req.payload = decoded
                 next()
             })
-        }catch (e) {
+        } catch (e) {
             console.log(e)
             next(createError.Unauthorized())
         }
 
+    },
+    verifyRefreshToken: async (token) => {
+        return new Promise((resolve, reject) => {
+            jwt.verify(token, REFRESH_ACCESS_TOKEN, (err, decoded) => {
+                if (err) {
+                    console.log(err)
+                    return reject(createError.Unauthorized())
+                }
+                resolve(decoded.email)
+            })
+        })
     }
 }
